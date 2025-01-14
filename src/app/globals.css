@@ -18,7 +18,11 @@
   color: #46a082;
 }
 
-.s-color {
+.p-bg {
+  background-color: #46a082;
+}
+
+.s-bg {
   background-color: #1d624b;
 }
 
@@ -32,6 +36,23 @@
 
 .aa-bg {
   background-color: #707070;
+}
+
+#done-button {
+  outline: 2px solid #707070;
+  transition: background-color 0.2s ease;
+}
+
+#done-button:hover {
+  background-color: #46a082;
+}
+
+#addTask {
+  transition: background-color 0.2s ease;
+}
+
+#addTask:hover {
+  background-color: #46a082;
 }
 
 @layer base {
