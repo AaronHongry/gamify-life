@@ -7,11 +7,11 @@
 }
 
 .background {
-  background-color: #191919;
+  background-color: #060908;
 }
 
 .card-background {
-  background-color: #252525;
+  background-color: #09110e;
 }
 
 .p-color {
@@ -24,6 +24,10 @@
 
 .s-bg {
   background-color: #1d624b;
+}
+
+.t-bg {
+  background-color: #0f2a21;
 }
 
 .a-color {
@@ -54,6 +58,26 @@
 #addTask:hover {
   background-color: #46a082;
 }
+
+#cancel-button {
+  outline: 2px solid #707070;
+  transition: background-color 0.2s ease;
+}
+
+#cancel-button:hover {
+  background-color: #0f2a21;
+}
+
+#add-button {
+  outline: 2px solid #707070;
+  transition: background-color 0.2s ease;
+}
+
+#add-button:hover {
+  background-color: #46a082;
+}
+
+
 
 @layer base {
   :root {

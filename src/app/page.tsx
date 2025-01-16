@@ -1,4 +1,3 @@
-import { Separator } from "@/components/ui/separator";
 import MainMenu from "@/components/mainMenu";
 
 export default function Home() {
