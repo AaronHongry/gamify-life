@@ -5,13 +5,25 @@ import Profile from "@/components/profile";
 import Task from "@/components/task";
 import AddTask from "./addTask";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const MainMenu = () => {
 
-    const [tasks, setTasks] = useState();
+    const [tasks, setTasks] = useState<{name: string, tag: string, xp: number}[]>([
+        {name: "Go to the gym.", tag: "Health", xp: 5},
+        {name: "Do a LeetCode problem.", tag: "Work", xp: 10}
+    ]);
 
-    const [isAddTaskOpen, setIsAddTaskOpen] = useState(true);
+    const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+
+    const handleAddTask = (newTask: {name: string, tag: string, xp: number }) => {
+        setTasks((prevTasks) => [...prevTasks, newTask]);
+    }
+
+    // Add when creating backend
+    useEffect(() => {
+        
+    }, [tasks]);
 
     return (
         <>
@@ -25,13 +37,14 @@ const MainMenu = () => {
                     <h1 className="text-2xl font-semibold">Todos</h1>
                     <Separator className="my-3 aa-bg"/>
                     <div className="flex flex-row gap-3 w-full h-full">
-                        <Task name={"Go to the gym."} tag={"Health"} xp={5}/>
-                        <Task name={"Do a LeetCode problem."} tag={"Work"} xp={10}/>
+                        {tasks.map((task, key) => (
+                            <Task key={key} name={task.name} tag={task.tag} xp={task.xp}/>
+                        ))}
                         <motion.button id="addTask" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="card-background h-10 w-10 self-center rounded-lg" onClick={() => setIsAddTaskOpen(true)}>+</motion.button>
                     </div>
                 </div>
             </div>
-            {isAddTaskOpen ? <AddTask onClose={() => setIsAddTaskOpen(false)} /> : null}
+            {isAddTaskOpen ? <AddTask onAddTask={handleAddTask} onClose={() => setIsAddTaskOpen(false)} /> : null}
         </>
     );
 }
