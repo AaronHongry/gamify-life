@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import Profile from "@/components/profile";
 import Task from "@/components/task";
 import AddTask from "./addTask";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 
 const MainMenu = () => {
@@ -44,7 +44,10 @@ const MainMenu = () => {
                     </div>
                 </div>
             </div>
-            {isAddTaskOpen ? <AddTask onAddTask={handleAddTask} onClose={() => setIsAddTaskOpen(false)} /> : null}
+            <AnimatePresence>
+                {isAddTaskOpen ? <AddTask onAddTask={handleAddTask} onClose={() => setIsAddTaskOpen(false)} /> : null}
+            </AnimatePresence>
+
         </>
     );
 }

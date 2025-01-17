@@ -6,6 +6,7 @@ import { Select,
     SelectTrigger,
     SelectValue } from "@/components/ui/select";
 import { Briefcase, Dumbbell, Circle, Ellipsis } from "lucide-react";
+import { motion } from "motion/react";
 
 interface AddTaskProps {
     onAddTask: (task: {name: string, tag: string, xp: number }) => void;
@@ -15,23 +16,36 @@ interface AddTaskProps {
 const AddTask: React.FC<AddTaskProps> = ({ onAddTask, onClose }) => {
 
     const [taskName, setTaskName] = useState("");
+    const [isNameInvalid, setIsNameInvalid] = useState(false);
     const [tag, setTag] = useState("");
+    const [isTagInvalid, setIsTagInvalid] = useState(false);
     const [xp, setXP] = useState(0);
+    const [isXpInvalid, setIsXpInvalid] = useState(false);
 
     const handleAddTask = () => {
-        onAddTask({name: taskName, tag: tag, xp: xp});
-        onClose();
+        let nameInvalid = taskName.trim() === "";
+        let tagInvalid = tag === "";
+        let xpInvalid = xp === 0;
+
+        setIsNameInvalid(nameInvalid);
+        setIsTagInvalid(tagInvalid);
+        setIsXpInvalid(xpInvalid);
+
+        if (!nameInvalid && !tagInvalid && !xpInvalid) {
+            onAddTask({name: taskName, tag: tag, xp: xp});
+            onClose();
+        }
     }
 
     return (
         <>
-            <div className="fixed inset-0 bg-black bg-opacity-40 z-40"></div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black bg-opacity-40 z-40"></motion.div>
             <div className="fixed inset-0 flex items-center justify-center z-50">
-                <div className="card-background flex flex-col gap-2 px-12 py-8 items-center justify-center rounded-lg shadow-lg w-1/5">
+                <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1}} exit={{ opacity: 0, scale: 0 }} transition={{ ease: "backInOut", }} className="card-background flex flex-col gap-2 px-12 py-8 items-center justify-center rounded-lg shadow-lg w-1/5">
                     <h1 className="text-3xl font-semibold pb-8">Add a New Task</h1>
-                    <Input type="text" placeholder="Task Name" className="font-bold py-7 w-full max-w-xs break-words" onBlur={(e) => setTaskName(e.target.value)}></Input>
+                    <Input type="text" placeholder="Task Name" className={`font-bold py-7 w-full max-w-xs break-words ${isNameInvalid ? 'border-red-400' : ""}`} onBlur={(e) => setTaskName(e.target.value)}></Input>
                     <Select onValueChange={(e) => setTag(e)}>
-                        <SelectTrigger className="py-7">
+                        <SelectTrigger className={`py-7 ${isTagInvalid ? "border-red-400" : ""}`}>
                             <SelectValue placeholder="Select a Tag" />
                         </SelectTrigger>
                         <SelectContent className="card-background text-color">
@@ -41,7 +55,7 @@ const AddTask: React.FC<AddTaskProps> = ({ onAddTask, onClose }) => {
                         </SelectContent>
                     </Select>
                     <Select onValueChange={(e) => setXP(parseInt(e))}>
-                        <SelectTrigger className="py-7">
+                        <SelectTrigger className={`py-7 ${isXpInvalid ? "border-red-400" : ""}`}>
                             <SelectValue placeholder="Select Task Difficulty" />
                         </SelectTrigger>
                         <SelectContent className="card-background text-color">
@@ -54,7 +68,7 @@ const AddTask: React.FC<AddTaskProps> = ({ onAddTask, onClose }) => {
                         <button id="cancel-button" className="my-3 py-2 rounded-md w-1/3" onClick={onClose}>Cancel</button>
                         <button id="add-button" className="my-3 py-2 t-bg rounded-md p-bg w-2/3 font-semibold" onClick={handleAddTask}>Add Item</button>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </>
     );
