@@ -5,7 +5,7 @@ import { Select,
     SelectItem,
     SelectTrigger,
     SelectValue } from "@/components/ui/select";
-import { Briefcase, Dumbbell, Circle, Ellipsis } from "lucide-react";
+import { Briefcase, Dumbbell, Ellipsis } from "lucide-react";
 import { motion } from "motion/react";
 
 interface AddTaskProps {
