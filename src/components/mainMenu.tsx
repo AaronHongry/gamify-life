@@ -2,9 +2,10 @@
 
 import { Separator } from "@/components/ui/separator";
 import Profile from "@/components/profile";
-import Task from "@/components/task";
 import AddTask from "./addTask";
 import DeleteTask from "./deleteTask";
+import InProgressTab from "./inProgressTab";
+import CompletedTab from "./completedTab";
 import { motion, AnimatePresence, useAnimate } from "motion/react";
 import { useState, useEffect } from "react";
 
@@ -78,17 +79,8 @@ const MainMenu = () => {
                         <p className={`${activeTab == "completed" ? "brightness-50 hover:brightness-100 border-b-0 transition-all" : "border-b-2"} cursor-default text-sm py-1 pt-2 px-2 text-center hover:bg-gray-700 transition duration-300`} onClick={() => handleTabChange("inProgress")}>In Progress</p><p className={`${activeTab == "inProgress" ? "brightness-50 hover:brightness-100 border-b-0 transition-all" : "border-b-2"} text-sm py-1  card-background pt-2 px-2 text-center hover:bg-gray-700 transition duration-300 cursor-default`} onClick={() => handleTabChange("completed")}>Completed</p>
                     </div>
                     <Separator className="mt-0 mb-3 aa-bg"/>
-                    <div className="flex flex-row gap-3 w-full h-full overflow-hidden">
-                        <AnimatePresence>
-                            {activeTab == "inProgress" && tasks.map((task, _) => (
-                                <Task key={task.id} id={task.id} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => setDeleteTask(task.id)} onDone={() => handleDone(task.id)} date={task.date}/>
-                            ))}
-                            {activeTab == "inProgress" && <motion.button id="addTask" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="card-background h-10 w-10 self-center rounded-lg" onClick={() => setIsAddTaskOpen(true)}>+</motion.button>}
-                            {activeTab == "completed" && completedTasks.map((task, _) => (
-                                <Task key={task.id} id={task.id} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => setDeleteTask(task.id)} onDone={() => {}} date={task.date}/>
-                            ))}
-                        </AnimatePresence>      
-                    </div>
+                    <InProgressTab progressTasks={tasks} handleDeleteTask={setDeleteTask} handleDoneTask={handleDone} handleAddTask={() => setIsAddTaskOpen(true)}/>
+                    <CompletedTab completedTasks={completedTasks}/>
                 </div>
             </div>
             <AnimatePresence>
