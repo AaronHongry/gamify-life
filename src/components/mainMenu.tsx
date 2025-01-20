@@ -5,16 +5,16 @@ import Profile from "@/components/profile";
 import Task from "@/components/task";
 import AddTask from "./addTask";
 import DeleteTask from "./deleteTask";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, LayoutGroup } from "motion/react";
 import { useState, useEffect } from "react";
 
 const MainMenu = () => {
-    const [tasks, setTasks] = useState<{name: string, tag: string, xp: number, completed: boolean, date: string}[]>([
-        {name: "Go to the gym.", tag: "Health", xp: 5, completed: false, date: ""},
-        {name: "Do a LeetCode problem.", tag: "Work", xp: 10, completed: false, date: ""}
+    const [tasks, setTasks] = useState<{id: string, name: string, tag: string, xp: number, completed: boolean, date: string}[]>([
+        {id: "task-1737364792", name: "Go to the gym.", tag: "Health", xp: 5, completed: false, date: ""},
+        {id: "task-1737364847", name: "Do a LeetCode problem.", tag: "Work", xp: 10, completed: false, date: ""}
     ]);
-    const [completedTasks, setCompletedTasks] = useState<{name: string, tag: string, xp: number, completed: boolean, date: string}[]>([
-        {name: "Goon", tag: "Other", xp: 20, completed: true, date: "January 19, 2025"}
+    const [completedTasks, setCompletedTasks] = useState<{id: string, name: string, tag: string, xp: number, completed: boolean, date: string}[]>([
+        {id: "task-1737364864", name: "Goon", tag: "Other", xp: 20, completed: true, date: "January 19, 2025"}
     ]);
 
     const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
@@ -22,7 +22,7 @@ const MainMenu = () => {
     const [currentDelete, setCurrentDelete] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<"inProgress" | "completed">("inProgress");
 
-    const handleAddTask = (newTask: {name: string, tag: string, xp: number, completed: boolean, date: string}) => {
+    const handleAddTask = (newTask: {id: string, name: string, tag: string, xp: number, completed: boolean, date: string}) => {
         setTasks((prevTasks) => [...prevTasks, newTask]);
     }
     
@@ -39,15 +39,15 @@ const MainMenu = () => {
         setIsDeleteTaskOpen(false);
     }
 
-    const handleDone = (id: number) => {
-        const doneTask = tasks[id];
+    const handleDone = (id: string) => {
+        const [doneTask] = tasks.filter((task, _) => task.id == id);
         doneTask.completed = true;
         const currentDate = new Date();
         doneTask.date = currentDate.toLocaleDateString(undefined, {year: "numeric", month: "long", day: "numeric"});
 
         if (doneTask) {
             setCompletedTasks((prevTasks) => [...prevTasks, doneTask]);
-            setTasks((prevTasks) => prevTasks.filter((_, index) => index != id));
+            setTasks((prevTasks) => prevTasks.filter((task, _) => task.id != id));
         }
     }
 
@@ -74,14 +74,15 @@ const MainMenu = () => {
                     <Separator className="mt-0 mb-3 aa-bg"/>
                     <div className="flex flex-row gap-3 w-full h-full">
                         <AnimatePresence>
-                            {activeTab == "inProgress" && tasks.map((task, key) => (
-                                <Task key={key} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => setDeleteTask(key)} onDone={() => handleDone(key)} date={task.date}/>
+                            {activeTab == "inProgress" && tasks.map((task, index) => (
+                                <Task key={task.id} id={task.id} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => setDeleteTask(index)} onDone={() => handleDone(task.id)} date={task.date}/>
                             ))}
                             {activeTab == "inProgress" && <motion.button id="addTask" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="card-background h-10 w-10 self-center rounded-lg" onClick={() => setIsAddTaskOpen(true)}>+</motion.button>}
-                            {activeTab == "completed" && completedTasks.map((task, key) => (
-                                <Task key={key} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => setDeleteTask(key)} onDone={() => {}} date={task.date}/>
+                            {activeTab == "completed" && completedTasks.map((task, index) => (
+                                <Task key={task.id} id={task.id} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => setDeleteTask(index)} onDone={() => {}} date={task.date}/>
                             ))}
                         </AnimatePresence>
+                        
                     </div>
                 </div>
             </div>
