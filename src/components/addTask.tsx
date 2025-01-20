@@ -9,7 +9,7 @@ import { Briefcase, Dumbbell, Ellipsis } from "lucide-react";
 import { motion } from "motion/react";
 
 interface AddTaskProps {
-    onAddTask: (task: {name: string, tag: string, xp: number }) => void;
+    onAddTask: (task: {name: string, tag: string, xp: number, completed: boolean}) => void;
     onClose: () => void;
 }
 
@@ -32,7 +32,7 @@ const AddTask: React.FC<AddTaskProps> = ({ onAddTask, onClose }) => {
         setIsXpInvalid(xpInvalid);
 
         if (!nameInvalid && !tagInvalid && !xpInvalid) {
-            onAddTask({name: taskName, tag: tag, xp: xp});
+            onAddTask({name: taskName, tag: tag, xp: xp, completed: false});
             onClose();
         }
     }
