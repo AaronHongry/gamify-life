@@ -17,12 +17,29 @@ interface TaskProps {
 
 const Task: React.FC<TaskProps>= ({id, name, tag, xp, onDelete, completed, onDone, date}) => {
 
+    const [exitAnimation, setExitAnimation] = useState<"delete" | "done" | null>(null);
+
     const handleDone = () => {
+        setExitAnimation("done");
         onDone();
     }
 
+    const handleDelete = () => {
+        setExitAnimation("delete");
+        onDelete();
+    }
+
     return (
-        <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1}} transition={{duration: 0.3}} whileTap={{ scale: 0.95, transition: {duration: 0.1} }} whileHover={{ scale: 1.05, transition: {duration: 0.3} }} exit={{ opacity: 0, translateY: -100, transition: {duration: 0.2} }} className="w-1/5 h-full card-background shadow-md">
+        <motion.div 
+            layout 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1}} 
+            transition={{duration: 0.3}} 
+            whileTap={{ scale: 0.95, transition: {duration: 0.1} }} 
+            whileHover={{ scale: 1.05, transition: {duration: 0.3} }} 
+            exit={exitAnimation == "done" ? { opacity: 0, translateY: -100, transition: {duration: 0.2, ease: "backIn"} } : 
+                { opacity: 0, scale: 0, transition: { duration: 0.4, ease: "anticipate" }}}
+            className="w-1/5 h-full card-background shadow-md">
             <div className="flex flex-col gap-3 py-3 px-3">
                 <div className="flex flex-col gap-2 items-start">
                     <div className="flex flex-row w-full justify-between">
@@ -31,7 +48,7 @@ const Task: React.FC<TaskProps>= ({id, name, tag, xp, onDelete, completed, onDon
                     ) : (
                         <Circle className="w-4 h-4 p-color"/>
                     )}
-                    { !completed && <motion.div initial={{ opacity: 0.5, scale: 1 }} whileHover={{ opacity: 1, scale: 1.5 }}><X className="w-4 h-4 hover:text-p aa-color" onClick={onDelete}/></motion.div>}
+                    { !completed && <motion.div initial={{ opacity: 0.5, scale: 1 }} whileHover={{ opacity: 1, scale: 1.5 }}><X className="w-4 h-4 hover:text-p aa-color" onClick={handleDelete}/></motion.div>}
                     </div>
                     
                     <h1 className="text-sm font-semibold">{name}</h1>
