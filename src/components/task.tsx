@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useAnimate } from "motion/react";
 import { Briefcase, Dumbbell, Circle, Ellipsis, X, Check, CircleCheckBig } from "lucide-react";
 import { useState, useEffect } from "react";  
 
@@ -22,7 +22,7 @@ const Task: React.FC<TaskProps>= ({id, name, tag, xp, onDelete, completed, onDon
     }
 
     return (
-        <motion.div layout initial={{y: 0}} whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.05 }} exit={{ opacity: 0, translateY: -100, transition: {duration: 0.2} }} className="w-1/5 h-full card-background shadow-md">
+        <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1}} transition={{duration: 0.3}} whileTap={{ scale: 0.95, transition: {duration: 0.1} }} whileHover={{ scale: 1.05, transition: {duration: 0.3} }} exit={{ opacity: 0, translateY: -100, transition: {duration: 0.2} }} className="w-1/5 h-full card-background shadow-md">
             <div className="flex flex-col gap-3 py-3 px-3">
                 <div className="flex flex-col gap-2 items-start">
                     <div className="flex flex-row w-full justify-between">

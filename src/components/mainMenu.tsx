@@ -5,7 +5,7 @@ import Profile from "@/components/profile";
 import Task from "@/components/task";
 import AddTask from "./addTask";
 import DeleteTask from "./deleteTask";
-import { motion, AnimatePresence, LayoutGroup } from "motion/react";
+import { motion, AnimatePresence, useAnimate } from "motion/react";
 import { useState, useEffect } from "react";
 
 const MainMenu = () => {
@@ -21,6 +21,7 @@ const MainMenu = () => {
     const [isDeleteTaskOpen, setIsDeleteTaskOpen] = useState(false);
     const [currentDelete, setCurrentDelete] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<"inProgress" | "completed">("inProgress");
+    const [delayedActiveTab, setDelayedActiveTab] = useState<"inProgress" | "completed">("inProgress");
 
     const handleAddTask = (newTask: {id: string, name: string, tag: string, xp: number, completed: boolean, date: string}) => {
         setTasks((prevTasks) => [...prevTasks, newTask]);
@@ -51,6 +52,12 @@ const MainMenu = () => {
         }
     }
 
+    const handleTabChange = (current: string) => {
+        setActiveTab(current == "inProgress" ? "inProgress" : "completed");
+    }
+
+    const [scope, animate] = useAnimate();
+
 
     // Add when creating backend
     useEffect(() => {
@@ -69,10 +76,10 @@ const MainMenu = () => {
                 <div className="p-4 w-4/5 h-full">
                     <h1 className="text-2xl font-semibold">Todos</h1>
                     <div className="grid grid-cols-10 gap-1">
-                        <p className={`${activeTab == "completed" ? "brightness-50 hover:brightness-100 border-b-0 transition-all" : "border-b-2"} cursor-default text-sm py-1 pt-2 px-2 text-center hover:bg-gray-700 transition duration-300`} onClick={() => setActiveTab("inProgress")}>In Progress</p><p className={`${activeTab == "inProgress" ? "brightness-50 hover:brightness-100 border-b-0 transition-all" : "border-b-2"} text-sm py-1  card-background pt-2 px-2 text-center hover:bg-gray-700 transition duration-300 cursor-default`} onClick={() => setActiveTab("completed")}>Completed</p>
+                        <p className={`${activeTab == "completed" ? "brightness-50 hover:brightness-100 border-b-0 transition-all" : "border-b-2"} cursor-default text-sm py-1 pt-2 px-2 text-center hover:bg-gray-700 transition duration-300`} onClick={() => handleTabChange("inProgress")}>In Progress</p><p className={`${activeTab == "inProgress" ? "brightness-50 hover:brightness-100 border-b-0 transition-all" : "border-b-2"} text-sm py-1  card-background pt-2 px-2 text-center hover:bg-gray-700 transition duration-300 cursor-default`} onClick={() => handleTabChange("completed")}>Completed</p>
                     </div>
                     <Separator className="mt-0 mb-3 aa-bg"/>
-                    <div className="flex flex-row gap-3 w-full h-full">
+                    <motion.div key={"what"} ref={scope} className="flex flex-row gap-3 w-full h-full">
                         <AnimatePresence>
                             {activeTab == "inProgress" && tasks.map((task, index) => (
                                 <Task key={task.id} id={task.id} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => setDeleteTask(index)} onDone={() => handleDone(task.id)} date={task.date}/>
@@ -83,7 +90,7 @@ const MainMenu = () => {
                             ))}
                         </AnimatePresence>
                         
-                    </div>
+                    </motion.div>
                 </div>
             </div>
             <AnimatePresence>
