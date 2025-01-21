@@ -3,22 +3,19 @@ import { motion, AnimatePresence } from "motion/react"
 
 interface CompletedTabProps {
     completedTasks: {id: string, name: string, tag: string, xp: number, completed: boolean, date: string}[];
-    handleDeleteTask: (id: string) => void;
-    handleDoneTask: (id: string) => void;
-    handleAddTask: (open: boolean) => void;
 }
 
 
-const CompletedTab: React.FC<CompletedTabProps> = ({completedTasks, handleDeleteTask, handleDoneTask, handleAddTask }) => {
+const CompletedTab: React.FC<CompletedTabProps> = ({completedTasks}) => {
 
     return (
-        <div className="flex flex-row gap-3 w-full h-full overflow-hidden">
+        <motion.div initial={{opacity: 0, translateY: -20}} animate={{opacity: 1, translateY: 0}} className="flex flex-row gap-3 w-full h-full overflow-hidden">
             <AnimatePresence>
                 {completedTasks.map((task, _) => (
-                    <Task key={task.id} id={task.id} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => handleDeleteTask(task.id)} onDone={() => {}} date={task.date}/>
+                    <Task key={task.id} id={task.id} name={task.name} tag={task.tag} xp={task.xp} completed={task.completed} onDelete={() => {}} onDone={() => {}} date={task.date}/>
                 ))}
             </AnimatePresence>   
-        </div>
+        </motion.div>
     );
 
 }

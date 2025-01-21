@@ -32,13 +32,12 @@ const Task: React.FC<TaskProps>= ({id, name, tag, xp, onDelete, completed, onDon
     return (
         <motion.div 
             layout 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1}} 
             transition={{duration: 0.3}} 
             whileTap={{ scale: 0.95, transition: {duration: 0.1} }} 
             whileHover={{ scale: 1.05, transition: {duration: 0.3} }} 
             exit={exitAnimation == "done" ? { opacity: 0, translateY: -100, transition: {duration: 0.2, ease: "backIn"} } : 
-                { opacity: 0, scale: 0, transition: { duration: 0.4, ease: "anticipate" }}}
+                exitAnimation == "delete" ? { opacity: 0, scale: 0, transition: { duration: 0.2, ease: "anticipate" }} : 
+                { opacity: 0, transition: { duration: 0.2 }}}
             className="w-1/5 h-full card-background shadow-md">
             <div className="flex flex-col gap-3 py-3 px-3">
                 <div className="flex flex-col gap-2 items-start">

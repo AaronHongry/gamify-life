@@ -79,13 +79,16 @@ const MainMenu = () => {
                         <p className={`${activeTab == "completed" ? "brightness-50 hover:brightness-100 border-b-0 transition-all" : "border-b-2"} cursor-default text-sm py-1 pt-2 px-2 text-center hover:bg-gray-700 transition duration-300`} onClick={() => handleTabChange("inProgress")}>In Progress</p><p className={`${activeTab == "inProgress" ? "brightness-50 hover:brightness-100 border-b-0 transition-all" : "border-b-2"} text-sm py-1  card-background pt-2 px-2 text-center hover:bg-gray-700 transition duration-300 cursor-default`} onClick={() => handleTabChange("completed")}>Completed</p>
                     </div>
                     <Separator className="mt-0 mb-3 aa-bg"/>
-                    <InProgressTab progressTasks={tasks} handleDeleteTask={setDeleteTask} handleDoneTask={handleDone} handleAddTask={() => setIsAddTaskOpen(true)}/>
-                    <CompletedTab completedTasks={completedTasks}/>
+                    <div className="w-full h-full overflow-hidden">
+                        {activeTab == "inProgress" && <InProgressTab progressTasks={tasks} handleDeleteTask={setDeleteTask} handleDoneTask={handleDone} handleAddTask={() => setIsAddTaskOpen(true)}/>}
+                        {activeTab == "completed" && <CompletedTab completedTasks={completedTasks}/>}
+                    </div>
+                    
                 </div>
             </div>
             <AnimatePresence>
-                {isAddTaskOpen ? <AddTask onAddTask={handleAddTask} onClose={() => setIsAddTaskOpen(false)} /> : null}
-                {isDeleteTaskOpen ? <DeleteTask onCancel={() => setIsDeleteTaskOpen(false)} onDelete={handleDeleteTask} /> : null}
+                {isAddTaskOpen && <AddTask onAddTask={handleAddTask} onClose={() => setIsAddTaskOpen(false)} />}
+                {isDeleteTaskOpen && <DeleteTask onCancel={() => setIsDeleteTaskOpen(false)} onDelete={handleDeleteTask} />}
             </AnimatePresence>
 
         </>
