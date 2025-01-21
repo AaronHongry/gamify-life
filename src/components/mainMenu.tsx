@@ -6,7 +6,7 @@ import AddTask from "./addTask";
 import DeleteTask from "./deleteTask";
 import InProgressTab from "./inProgressTab";
 import CompletedTab from "./completedTab";
-import { motion, AnimatePresence, useAnimate } from "motion/react";
+import { motion, AnimatePresence} from "motion/react";
 import { useState, useEffect } from "react";
 
 const MainMenu = () => {
@@ -22,6 +22,9 @@ const MainMenu = () => {
     const [isDeleteTaskOpen, setIsDeleteTaskOpen] = useState(false);
     const [currentDelete, setCurrentDelete] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<"inProgress" | "completed">("inProgress");
+
+    const [currentLevel, setCurrentLevel] = useState(1);
+    const [currentXp, setCurrentXp] = useState(0);
 
     const handleAddTask = (newTask: {id: string, name: string, tag: string, xp: number, completed: boolean, date: string}) => {
         setTasks((prevTasks) => [...prevTasks, newTask]);
@@ -48,6 +51,7 @@ const MainMenu = () => {
 
         if (doneTask) {
             setCompletedTasks((prevTasks) => [...prevTasks, doneTask]);
+            setCurrentXp((prev) => prev + doneTask.xp);
             setTasks((prevTasks) => prevTasks.filter((task, _) => task.id != id));
         }
     }
@@ -56,13 +60,17 @@ const MainMenu = () => {
         setActiveTab(current == "inProgress" ? "inProgress" : "completed");
     }
 
-    const [scope, animate] = useAnimate();
-
-
     // Add when creating backend
     useEffect(() => {
         
     }, [tasks]);
+
+    useEffect(() => {
+        if (currentXp > 30) {
+            setCurrentLevel(prev => prev + 1);
+            setCurrentXp(prev => prev % 30);
+        }
+    }, [currentXp]);
 
     return (
         <>
@@ -71,7 +79,7 @@ const MainMenu = () => {
                     <h1 className="text-2xl font-semibold">My Profile</h1>
                     <p className="text-sm py-1 pt-2">Settings</p>
                     <Separator className="mt-0 mb-3 aa-bg"/>
-                    <Profile />
+                    <Profile level={currentLevel} xp={currentXp}/>
                 </div>
                 <div className="p-4 w-4/5 h-full">
                     <h1 className="text-2xl font-semibold">Todos</h1>
