@@ -7,11 +7,12 @@ import { useState, useEffect } from "react";
 
 interface ProfileProp {
     level: number,
-    xp: number,
+    totalXp: number,
+    currentXp: number,
     streak: number
 }
 
-const Profile: React.FC<ProfileProp> = ({level, xp, streak}) => {
+const Profile: React.FC<ProfileProp> = ({level, totalXp, currentXp, streak}) => {
 
     return (
         <motion.div whileHover={{ scale: 1.02 }} className="w-full h-full card-background shadow-md">
@@ -21,8 +22,9 @@ const Profile: React.FC<ProfileProp> = ({level, xp, streak}) => {
             <div className="flex flex-col gap-2 py-3 px-3">
                 <h1 className="text-lg font-semibold">Aaron Hong</h1>
                 <p className="text-color">Level: {level}</p>
-                <p className="text-color">XP: {xp} / {30}</p>
-                <Progress value={xp * (10 / 3)} className="t-bg"/>
+                <p className="text-color">Total XP: {totalXp} </p>
+                <Progress value={currentXp * (10 / 3)} className="t-bg"/>
+                <p className="text-color text-xs">To next level: {currentXp} / {30}</p>
                 <p className={`${streak > 0 ? "text-color" : "aa-color"}`}>Streak: {streak} 🔥</p>
             </div>
         </motion.div>
