@@ -25,6 +25,8 @@ const MainMenu = () => {
 
     const [currentLevel, setCurrentLevel] = useState(1);
     const [currentXp, setCurrentXp] = useState(0);
+    const [xpAnimating, setXpAnimating] = useState(false);
+    const [currentStreak, setCurrentStreak] = useState(0);
 
     const handleAddTask = (newTask: {id: string, name: string, tag: string, xp: number, completed: boolean, date: string}) => {
         setTasks((prevTasks) => [...prevTasks, newTask]);
@@ -54,6 +56,10 @@ const MainMenu = () => {
             setCurrentXp((prev) => prev + doneTask.xp);
             setTasks((prevTasks) => prevTasks.filter((task, _) => task.id != id));
         }
+
+        if (currentStreak == 0) {
+            setCurrentStreak(1);
+        }
     }
 
     const handleTabChange = (current: string) => {
@@ -66,10 +72,23 @@ const MainMenu = () => {
     }, [tasks]);
 
     useEffect(() => {
-        if (currentXp > 30) {
-            setCurrentLevel(prev => prev + 1);
-            setCurrentXp(prev => prev % 30);
+        if (currentXp >= 30 && !xpAnimating) {
+            setXpAnimating(true);
+
+            const leftover = currentXp % 30;
+            
+            setCurrentXp(30);
+            setTimeout(() => {
+                setCurrentLevel(prev => prev + 1);
+                setCurrentXp(0);
+            }, 100);
+            setTimeout(()=>{
+                setCurrentXp(leftover);
+                setXpAnimating(false);
+            }, 200);
+
         }
+
     }, [currentXp]);
 
     return (
@@ -77,9 +96,9 @@ const MainMenu = () => {
             <div className="flex xl:flex-row flex-col">
                 <div className="flex flex-col xl:w-1/5 w-full h-full p-4">
                     <h1 className="text-2xl font-semibold">My Profile</h1>
-                    <p className="text-sm py-1 pt-2">Settings</p>
+                    <p className="text-sm py-1 pt-2">In Progress</p>
                     <Separator className="mt-0 mb-3 aa-bg"/>
-                    <Profile level={currentLevel} xp={currentXp}/>
+                    <Profile level={currentLevel} xp={currentXp} streak={currentStreak}/>
                 </div>
                 <div className="p-4 w-4/5 h-full">
                     <h1 className="text-2xl font-semibold">Todos</h1>
