@@ -17,10 +17,17 @@ interface RewardsProps {
 
 const Rewards: React.FC<RewardsProps>= ({id, name, tag, cost, onDelete, active, onDone, date}) => {
 
-    const [exitAnimation, setExitAnimation] = useState<"delete" | "done" | null>(null);
+    const [exitAnimation, setExitAnimation] = useState<"delete" | null>(null);
+    const [scope, animate] = useAnimate();
 
     const handleDone = () => {
-        setExitAnimation("done");
+        if (active) {
+            animate(scope.current, {translateY: [0, 10, -5, 0]}, {duration: 0.5, ease: "anticipate"});
+            animate(scope.current, {backgroundColor: ["#11201b", "#09110e"]}, {duration: 0.5, ease: "anticipate"});
+        } else {
+            animate(scope.current, {translateX: [0, 5, -5, 5, -5, 0]}, {duration: 0.5, ease: "anticipate"});
+            animate(scope.current, {backgroundColor: ["#321919", "#09110e"]}, {duration: 0.5, ease: "anticipate"});
+        }
         onDone();
     }
 
@@ -30,13 +37,12 @@ const Rewards: React.FC<RewardsProps>= ({id, name, tag, cost, onDelete, active, 
     }
 
     return (
-        <motion.div 
-            layout 
+        <motion.div ref={scope}
+            layout
             transition={{duration: 0.3}} 
             whileTap={{ scale: 0.95, transition: {duration: 0.1} }} 
             whileHover={{ scale: 1.05, transition: {duration: 0.3} }} 
-            exit={exitAnimation == "done" ? { opacity: 0, translateY: -100, transition: {duration: 0.2, ease: "backIn"} } : 
-                exitAnimation == "delete" ? { opacity: 0, scale: 0, transition: { duration: 0.2, ease: "anticipate" }} : 
+            exit={ exitAnimation == "delete" ? { opacity: 0, scale: 0, transition: { duration: 0.2, ease: "anticipate" }} : 
                 { opacity: 0, transition: { duration: 0.2 }}}
             className="w-1/5 h-full card-background shadow-md">
             <div className="flex flex-col gap-3 py-3 px-3">
@@ -56,12 +62,9 @@ const Rewards: React.FC<RewardsProps>= ({id, name, tag, cost, onDelete, active, 
                     <div className="flex flex-row gap-2 items-center"><Clapperboard className="w-4 h-4 p-color"/><p className="text-xs text-color">{tag}</p></div>)
                 : (<div className="flex flex-row gap-2 items-center"><Ellipsis className="w-4 h-4 p-color"/><p className="text-xs text-color">{tag}</p></div>)}
 
-                { active ? (
-                    <p className="text-xs aa-color self-start py-1">{date}</p>
-                ) : (
-                    <p className="text-xs text-color font-bold s-bg self-start px-2 py-1">{cost} XP</p>
-                )}
-                <button id="done-button" className={`${active && "invisible"} my-3 rounded-lg`} onClick={handleDone}>Done</button>
+                <p className="text-xs text-color font-bold s-bg self-start px-2 py-1">{cost} XP</p>
+
+                <button id="done-button" className={`my-3 rounded-lg`} onClick={handleDone}>Buy</button>
             </div>
         </motion.div>
     );

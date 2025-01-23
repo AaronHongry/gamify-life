@@ -7,6 +7,9 @@ import DeleteTask from "./deleteTask";
 import InProgressTab from "./inProgressTab";
 import CompletedTab from "./completedTab";
 import RewardsTab from "./rewardsTab";
+import AddReward from "./addRewards";
+import DeleteReward from "./deleteRewards";
+import InventoryItem from "./inventoryItem";
 import { motion, AnimatePresence} from "motion/react";
 import { useState, useEffect } from "react";
 
@@ -19,9 +22,12 @@ const MainMenu = () => {
         {id: "task-1737364864", name: "Goon", tag: "Other", xp: 20, completed: true, date: "January 19, 2025"}
     ]);
     const [rewards, setRewards] = useState<{id: string, name: string, tag: string, cost: number, active: boolean, date: string}[]>([
-        {id: "task-1737361234", name: "Goon Session", tag: "Other", cost: 100, active: false, date: "January 19, 2025"},
-        {id: "task-1737364567", name: "Watch Netflix", tag: "Movies", cost: 20, active: false, date: "January 19, 2025"},
-        {id: "task-1737362345", name: "AMPM MOTIVE", tag: "Party", cost: 50, active: false, date: "January 19, 2025"}
+        {id: "reward-1737361234", name: "Goon Session", tag: "Other", cost: 100, active: false, date: "January 19, 2025"},
+        {id: "reward-1737364567", name: "Watch Netflix", tag: "Movies", cost: 20, active: false, date: "January 19, 2025"},
+        {id: "reward-1737362345", name: "AMPM MOTIVE", tag: "Party", cost: 50, active: false, date: "January 19, 2025"}
+    ]);
+    const [inventory, setInventory] = useState<{id: string, name: string, tag: string, cost: number, active: boolean, date: string}[]>([
+        {id: "reward-1737361111", name: "Mega Goon Session", tag: "Other", cost: 100, active: false, date: "January 19, 2025"}
     ]);
 
     const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
@@ -77,6 +83,37 @@ const MainMenu = () => {
     const handleTabChange = (current: string) => {
         setActiveTab(current == "inProgress" ? "inProgress" : "completed");
     }
+    
+    const handleAddReward = (newReward: {id: string, name: string, tag: string, cost: number, active: boolean, date: string}) => {
+        setRewards((prevReward) => [...prevReward, newReward]);
+    }
+
+    const setDeleteReward = (id:string) => {
+        setIsDeleteRewardOpen(true);
+        setCurrentRewardDelete(id);
+    }
+    
+    const handleDeleteReward = () => {
+        if (currentRewardDelete != null) {
+            setRewards((prevReward) => prevReward.filter((reward, _) => reward.id != currentRewardDelete));
+            setCurrentRewardDelete(null);
+        }
+        setIsDeleteRewardOpen(false);
+    }
+
+    const handleRewardDone = (id: string) => {
+        const rewardCost = rewards.find(reward => reward.id == id)?.cost;
+        if (rewardCost && rewardCost <= totalXp) {
+            setTotalXp(prev => prev - rewardCost);
+
+            const [doneReward] = rewards.filter((reward, _) => reward.id == id);
+            doneReward.id = `inventory-${Date.now()}`;
+            if (doneReward) {
+                setInventory(prevInventory => [doneReward, ...prevInventory]);
+            }
+        }
+    }
+    
 
     // Add when creating backend
     useEffect(() => {
@@ -84,6 +121,12 @@ const MainMenu = () => {
     }, [tasks]);
 
     useEffect(() => {
+        setRewards(prevRewards =>
+            prevRewards.map(reward => 
+                ({...reward, active: totalXp >= reward.cost})
+            )
+        );
+
         if (currentXp >= 30 && !xpAnimating) {
             setXpAnimating(true);
 
@@ -98,19 +141,30 @@ const MainMenu = () => {
                 setCurrentXp(leftover);
                 setXpAnimating(false);
             }, 200);
-
         }
-
-    }, [currentXp]);
+    }, [currentXp, totalXp]);
 
     return (
         <>
             <div className="flex xl:flex-row flex-col">
                 <div className="flex flex-col xl:w-1/5 w-full h-full p-4">
                     <h1 className="text-2xl font-semibold">My Profile</h1>  
-                    <p className="text-sm py-1 pt-2 border-b-2 border-transparent">In Progress</p>
+                    <p className="text-sm py-1 pt-2 border-b-2 border-transparent">Settings</p>
                     <Separator className="mt-0 mb-3 aa-bg"/>
                     <Profile level={currentLevel} totalXp={totalXp} currentXp={currentXp} streak={currentStreak}/>
+
+                    <div className="flex flex-col gap-2 pt-2">
+                        <h1 className="text-2xl font-semibold py-1">Inventory</h1>
+                        <Separator className="mt-0 mb-3 aa-bg"/>
+                        <div className="h-full overflow-hidden">
+                            <motion.div drag="y" dragConstraints={{top: 0, bottom: 0}} dragElastic={0.1} whileDrag={{cursor: "grabbing"}} style={{cursor: "grab"}} className="flex flex-col w-full h-52 max-h-52 overflow-y-auto overflow-x-hidden">
+                                {inventory.map((inventoryItem, _) => (
+                                    <InventoryItem key= {inventoryItem.id} name={inventoryItem.name} tag={inventoryItem.tag}/>
+                                ))}
+                            </motion.div>
+                        </div>
+                        <Separator className="mt-0 mb-3 aa-bg"/>
+                    </div>
                 </div>
                 <div className="p-4 w-4/5 h-full">
                     <h1 className="text-2xl font-semibold">Todos</h1>
@@ -123,16 +177,18 @@ const MainMenu = () => {
                         {activeTab == "completed" && <CompletedTab completedTasks={completedTasks}/>}
                     </div>
 
-                    <h1 className="text-2xl font-semibold">Rewards</h1>
+                    <h1 className="text-2xl font-semibold py-1 pb-2">Rewards</h1>
                     <Separator className="mt-0 mb-3 aa-bg"/>
-                    <div className="w-full h-full overflow-hidden">
-                        <RewardsTab rewards={rewards} handleDeleteReward={() => {}} handleAddReward={() => {}} handleDoneReward={() => {}}/>
+                    <div className="relative w-full h-full overflow-hidden">
+                        <RewardsTab rewards={rewards} handleDeleteReward={setDeleteReward} handleAddReward={() => setIsAddRewardOpen(true)} handleDoneReward={handleRewardDone}/>
                     </div>
                 </div>
             </div>
             <AnimatePresence>
                 {isAddTaskOpen && <AddTask onAddTask={handleAddTask} onClose={() => setIsAddTaskOpen(false)} />}
                 {isDeleteTaskOpen && <DeleteTask onCancel={() => setIsDeleteTaskOpen(false)} onDelete={handleDeleteTask} />}
+                {isAddRewardOpen && <AddReward onAddReward={handleAddReward} onClose={() => setIsAddRewardOpen(false)} />}
+                {isDeleteRewardOpen && <DeleteReward onCancel={() => setIsDeleteRewardOpen(false)} onDelete={handleDeleteReward} />}
             </AnimatePresence>
 
         </>
