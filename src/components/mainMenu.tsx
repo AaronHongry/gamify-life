@@ -14,23 +14,83 @@ import LevelUp from "./levelUp";
 import { motion, AnimatePresence} from "motion/react";
 import { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
+import { db } from "@/app/firebaseConfig";
+import { collection, query, where, getDocs, updateDoc, doc, arrayUnion, arrayRemove, increment} from "firebase/firestore";
 
-const MainMenu = () => {
-    const [tasks, setTasks] = useState<{id: string, name: string, tag: string, xp: number, completed: boolean, date: string}[]>([
-        {id: "task-1737364792", name: "Go to the gym.", tag: "Health", xp: 5, completed: false, date: ""},
-        {id: "task-1737364847", name: "Do a LeetCode problem.", tag: "Work", xp: 10, completed: false, date: ""}
+interface MainMenuProps {
+    username: string
+}
+
+interface Task {
+    id: string,
+    name: string,
+    tag: string,
+    xp: number,
+    completed: boolean,
+    date: string
+}
+
+interface Reward {
+    id: string,
+    name: string,
+    tag: string,
+    cost: number,
+    active: boolean,
+    date: string
+}
+
+const MainMenu: React.FC<MainMenuProps> = ({username}) => {
+
+    const getUserByUsername = async () => {
+        try {
+            const q = query(collection(db, "users"), where("username", "==", username));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                return querySnapshot.docs[0].data();
+            } else {
+                console.log("User not found.");
+                return null;
+            }
+        } catch (error) {
+            console.log("Error getting users.", error);
+            return null;
+        }
+    }
+
+    const [tasks, setTasks] = useState<Task[]>([
+
     ]);
-    const [completedTasks, setCompletedTasks] = useState<{id: string, name: string, tag: string, xp: number, completed: boolean, date: string}[]>([
-        {id: "task-1737364864", name: "Ate Healthy", tag: "Health", xp: 20, completed: true, date: "January 19, 2025"}
+    const [completedTasks, setCompletedTasks] = useState<Task[]>([
+
     ]);
-    const [rewards, setRewards] = useState<{id: string, name: string, tag: string, cost: number, active: boolean, date: string}[]>([
-        {id: "reward-1737361234", name: "Play Guitar", tag: "Other", cost: 100, active: false, date: "January 19, 2025"},
-        {id: "reward-1737364567", name: "Watch Netflix", tag: "Movies", cost: 20, active: false, date: "January 19, 2025"},
-        {id: "reward-1737362345", name: "Go clubbing", tag: "Party", cost: 50, active: false, date: "January 19, 2025"}
+    const [rewards, setRewards] = useState<Reward[]>([
+
     ]);
-    const [inventory, setInventory] = useState<{id: string, name: string, tag: string, cost: number, active: boolean, date: string}[]>([
-        {id: "reward-1737361111", name: "Watch Netflix", tag: "Movies", cost: 20, active: false, date: "January 19, 2025"}
+    const [inventory, setInventory] = useState<Reward[]>([
     ]);
+
+    const [currentLevel, setCurrentLevel] = useState(1);
+    const [currentXp, setCurrentXp] = useState(0);
+    const [totalXp, setTotalXp] = useState(0);
+    const [xpAnimating, setXpAnimating] = useState(false);
+    const [currentStreak, setCurrentStreak] = useState(0);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userData = await getUserByUsername();
+            if (userData) {
+                setTasks(userData.tasks);
+                setCompletedTasks(userData.completedTasks);
+                setRewards(userData.rewards);
+                setInventory(userData.inventory);
+                setCurrentLevel(userData.level);
+                setCurrentXp(userData.xp);
+                setTotalXp(userData.totalXp);
+                setCurrentStreak(userData.streak);
+            }
+        };
+        fetchUserData();
+    }, [])
 
     const isSmallScreen = useMediaQuery({ query: "(max-width: 1023px)"});
 
@@ -43,17 +103,18 @@ const MainMenu = () => {
     const [isDeleteRewardOpen, setIsDeleteRewardOpen] = useState(false);
     const [currentRewardDelete, setCurrentRewardDelete] = useState<string | null>(null);
 
-    const [currentLevel, setCurrentLevel] = useState(1);
-    const [currentXp, setCurrentXp] = useState(0);
-    const [totalXp, setTotalXp] = useState(0);
-    const [xpAnimating, setXpAnimating] = useState(false);
-    const [currentStreak, setCurrentStreak] = useState(0);
-
     const [showLevelUp, setShowLevelUp] = useState(false);
     const [passLevel, setPassLevel] = useState(1);
 
-    const handleAddTask = (newTask: {id: string, name: string, tag: string, xp: number, completed: boolean, date: string}) => {
+    const handleAddTask = async (newTask: {id: string, name: string, tag: string, xp: number, completed: boolean, date: string}) => {
         setTasks((prevTasks) => [...prevTasks, newTask]);
+
+        try {
+            const userRef = doc(db, "users", username);
+            await updateDoc(userRef, {tasks: arrayUnion(newTask)});
+        } catch (error) {
+            console.log("Failed to add task.", error);
+        }
     }
     
     const setDeleteTask = (id:string) => {
@@ -61,15 +122,24 @@ const MainMenu = () => {
         setCurrentDelete(id);
     }
 
-    const handleDeleteTask = () => {
+    const handleDeleteTask = async () => {
         if (currentDelete != null) {
             setTasks((prevTasks) => prevTasks.filter((task, _) => task.id != currentDelete));
+
+            try {
+                const userRef = doc(db, "users", username);
+                const toRemove = tasks.find((task) => task.id == currentDelete);
+                await updateDoc(userRef, {tasks: arrayRemove(toRemove)});
+            } catch (error) {
+                console.log("Failed to delete task.", error);
+            }
+
             setCurrentDelete(null);
         }
         setIsDeleteTaskOpen(false);
     }
 
-    const handleDone = (id: string) => {
+    const handleDone = async (id: string) => {
         const [doneTask] = tasks.filter((task, _) => task.id == id);
         doneTask.completed = true;
         const currentDate = new Date();
@@ -77,9 +147,30 @@ const MainMenu = () => {
 
         if (doneTask) {
             setCompletedTasks((prevTasks) => [...prevTasks, doneTask]);
+            try {
+                const userRef = doc(db, "users", username);
+                await updateDoc(userRef, {completedTasks: arrayUnion(doneTask)});
+            } catch (error) {
+                console.log("Failed to add completed task.", error);
+            }
+
             setTotalXp((prev) => prev + doneTask.xp);
+            try {
+                const userRef = doc(db, "users", username);
+                await updateDoc(userRef, {totalXp: increment(doneTask.xp)});
+            } catch (error) {
+                console.log("Failed to add totalXp.", error);
+            }
+
             setCurrentXp((prev) => prev + doneTask.xp);
             setTasks((prevTasks) => prevTasks.filter((task, _) => task.id != id));
+            try {
+                const userRef = doc(db, "users", username);
+                const toRemove = tasks.find((task) => task.id == id);
+                await updateDoc(userRef, {tasks: arrayRemove(toRemove)});
+            } catch (error) {
+                console.log("Failed to remove from tasks when completed.", error);
+            }
         }
 
         if (currentStreak == 0) {
@@ -91,8 +182,15 @@ const MainMenu = () => {
         setActiveTab(current == "inProgress" ? "inProgress" : "completed");
     }
     
-    const handleAddReward = (newReward: {id: string, name: string, tag: string, cost: number, active: boolean, date: string}) => {
+    const handleAddReward = async (newReward: {id: string, name: string, tag: string, cost: number, active: boolean, date: string}) => {
         setRewards((prevReward) => [...prevReward, newReward]);
+
+        try {
+            const userRef = doc(db, "users", username);
+            await updateDoc(userRef, {rewards: arrayUnion(newReward)});
+        } catch (error) {
+            console.log("Failed to add reward.", error);
+        }
     }
 
     const setDeleteReward = (id:string) => {
@@ -100,34 +198,66 @@ const MainMenu = () => {
         setCurrentRewardDelete(id);
     }
     
-    const handleDeleteReward = () => {
+    const handleDeleteReward = async () => {
         if (currentRewardDelete != null) {
             setRewards((prevReward) => prevReward.filter((reward, _) => reward.id != currentRewardDelete));
+            try {
+                const userRef = doc(db, "users", username);
+                const toRemove = rewards.find((reward) => reward.id == currentRewardDelete);
+                if (toRemove) {
+                    toRemove.active = false;
+                }
+                await updateDoc(userRef, {rewards: arrayRemove(toRemove)});
+            } catch (error) {
+                console.log("Failed to delete reward.", error);
+            }
             setCurrentRewardDelete(null);
         }
         setIsDeleteRewardOpen(false);
     }
 
-    const handleRewardDone = (id: string) => {
+    const handleRewardDone = async (id: string) => {
         const rewardCost = rewards.find(reward => reward.id == id)?.cost;
         if (rewardCost && rewardCost <= totalXp) {
             setTotalXp(prev => prev - rewardCost);
+            try {
+                const userRef = doc(db, "users", username);
+                await updateDoc(userRef, {totalXp: increment(-rewardCost)});
+            } catch (error) {
+                console.log("Failed to remove total xp after completed.", error);
+            }
+
 
             const [doneReward] = rewards.filter((reward, _) => reward.id == id);
             doneReward.id = `inventory-${Date.now()}`;
             if (doneReward) {
                 setInventory(prevInventory => [doneReward, ...prevInventory]);
+                try {
+                    const userRef = doc(db, "users", username);
+                    const toRemove = rewards.find((reward) => reward.id == id);
+                    if (toRemove) {
+                        toRemove.active = false;
+                    }
+                    console.log(doneReward);
+                    await updateDoc(userRef, {inventory: arrayUnion(doneReward)});
+                } catch (error) {
+                    console.log("Failed to delete reward after completed.", error);
+                }
             }
         }
     }
-    
-
-    // Add when creating backend
-    useEffect(() => {
-        
-    }, [tasks]);
 
     useEffect(() => {
+        const updateLeftoverXp = async (leftover: number) => {
+            try {
+                const userRef = doc(db, "users", username);
+                await updateDoc(userRef, {level: increment(1), xp: leftover});
+            } catch (error) {
+                console.log("Failed to update leftover exp.", error);
+            }
+            
+        }
+
         setRewards(prevRewards =>
             prevRewards.map(reward => 
                 ({...reward, active: totalXp >= reward.cost})
@@ -154,6 +284,7 @@ const MainMenu = () => {
                 setCurrentXp(leftover);
                 setXpAnimating(false);
             }, 3900);
+            updateLeftoverXp(leftover);
         }
     }, [currentXp, totalXp]);
 
